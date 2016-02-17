@@ -7,7 +7,7 @@ var moment = require('moment');
 var Parser = require('../parser').Parser;
 var ParsedResult = require('../../result').ParsedResult;
 
-var PATTERN = /(\W|^)(today|tonight|tomorrow|tmr|yesterday|last\s*night|this\s*(morning|afternoon|evening))(?=\W|$)/i;
+var PATTERN = /(\W|^)(today|tonight|tomorrow|tmr|tom|yesterday|last\s*night|this\s*(morning|afternoon|evening))(?=\W|$)/i;
     
 exports.Parser = function ENCasualDateParser(){
     
@@ -29,12 +29,14 @@ exports.Parser = function ENCasualDateParser(){
         var startMoment = refMoment.clone();
         var lowerText = text.toLowerCase();
 
+        var tomorrowWords = ['tomorrow', 'tmr', 'tom'];
+
         if(lowerText == 'tonight'){
             // Normally means this coming midnight 
             result.start.imply('hour', 22);
             result.start.imply('meridiem', 1);
 
-        } else if(lowerText == 'tomorrow' || lowerText == 'tmr'){
+        } else if(tomorrowWords.indexOf(lowerText) > -1){
 
             // Check not "Tomorrow" on late night
             if(refMoment.hour() > 4) {
