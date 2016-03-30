@@ -9,28 +9,28 @@ var ParsedResult = require('../../result').ParsedResult;
 var ParsedComponents = require('../../result').ParsedComponents;
 
 var FIRST_REG_PATTERN  = new RegExp("(^|\\s|T)" +
-    "(?:(?:at|from)\\s*)?" + 
-    "(\\d{1,4}|noon|midnight)" + 
-    "(?:" + 
-        "(?:\\.|\\:|\\：)(\\d{1,2})" + 
-        "(?:" + 
-            "(?:\\:|\\：)(\\d{2})" + 
-        ")?" + 
-    ")?" + 
-    "(?:\\s*(A\\.M\\.|P\\.M\\.|AM?|PM?))?" + 
+    "(?:(?:a las?|al?|desde|de)\\s*)?" +
+    "(\\d{1,4}|mediod[ií]a|medianoche)" +
+    "(?:" +
+        "(?:\\.|\\:|\\：)(\\d{1,2})" +
+        "(?:" +
+            "(?:\\:|\\：)(\\d{2})" +
+        ")?" +
+    ")?" +
+    "(?:\\s*(A\\.M\\.|P\\.M\\.|AM?|PM?))?" +
     "(?=\\W|$)", 'i');
 
 
-var SECOND_REG_PATTERN = new RegExp("^\\s*" + 
-    "(\\-|\\–|\\~|\\〜|to|\\?)\\s*" + 
+var SECOND_REG_PATTERN = new RegExp("^\\s*" +
+    "(\\-|\\–|\\~|\\〜|a(?:\s*las)?|\\?)\\s*" +
     "(\\d{1,4})" +
-    "(?:" + 
-        "(?:\\.|\\:|\\：)(\\d{1,2})" + 
-        "(?:" + 
-            "(?:\\.|\\:|\\：)(\\d{1,2})" + 
-        ")?" + 
-    ")?" + 
-    "(?:\\s*(A\\.M\\.|P\\.M\\.|AM?|PM?))?" + 
+    "(?:" +
+        "(?:\\.|\\:|\\：)(\\d{1,2})" +
+        "(?:" +
+            "(?:\\.|\\:|\\：)(\\d{1,2})" +
+        ")?" +
+    ")?" +
+    "(?:\\s*(A\\.M\\.|P\\.M\\.|AM?|PM?))?" +
     "(?=\\W|$)", 'i');
 
 var HOUR_GROUP    = 2;
@@ -38,14 +38,13 @@ var MINUTE_GROUP  = 3;
 var SECOND_GROUP  = 4;
 var AM_PM_HOUR_GROUP = 5;
 
-
-exports.Parser = function ENTimeExpressionParser(){
+exports.Parser = function ESTimeExpressionParser(){
     Parser.apply(this, arguments);
 
     this.pattern = function() { return FIRST_REG_PATTERN; }
-    
-    this.extract = function(text, ref, match, opt){ 
-        
+
+    this.extract = function(text, ref, match, opt){
+
         // This pattern can be overlaped Ex. [12] AM, 1[2] AM
         if (match.index > 0 && text[match.index-1].match(/\w/)) return null;
         var refMoment = moment(ref);
@@ -53,43 +52,43 @@ exports.Parser = function ENTimeExpressionParser(){
         result.ref = ref;
         result.index = match.index + match[1].length;
         result.text  = match[0].substring(match[1].length);
-        result.tags['ENTimeExpressionParser'] = true;
+        result.tags['ESTimeExpressionParser'] = true;
 
         result.start.imply('day',   refMoment.date());
         result.start.imply('month', refMoment.month()+1);
         result.start.imply('year',  refMoment.year());
-        
+
         var hour = 0;
         var minute = 0;
         var meridiem = -1;
 
         // ----- Second
-        if(match[SECOND_GROUP] != null){ 
+        if(match[SECOND_GROUP] != null){
             var second = parseInt(match[SECOND_GROUP]);
             if(second >= 60) return null;
 
             result.start.assign('second', second);
         }
-        
+
         // ----- Hours
-        if (match[HOUR_GROUP].toLowerCase() == "noon"){
-            meridiem = 1; 
+        if (match[HOUR_GROUP].toLowerCase().match(/mediod/)){
+            meridiem = 1;
             hour = 12;
-        } else if (match[HOUR_GROUP].toLowerCase() == "midnight") {
-            meridiem = 0; 
+        } else if (match[HOUR_GROUP].toLowerCase() == "medianoche") {
+            meridiem = 0;
             hour = 0;
         } else {
             hour = parseInt(match[HOUR_GROUP]);
         }
-        
+
         // ----- Minutes
-        if(match[MINUTE_GROUP] != null){ 
+        if(match[MINUTE_GROUP] != null){
             minute = parseInt(match[MINUTE_GROUP]);
-        } else if(hour > 100) { 
+        } else if(hour > 100) {
             minute = hour%100;
             hour   = parseInt(hour/100);
-        } 
-        
+        }
+
         if(minute >= 60) {
             return null;
         }
@@ -97,45 +96,37 @@ exports.Parser = function ENTimeExpressionParser(){
         if(hour > 24) {
             return null;
         }
-        if (hour >= 12) { 
+        if (hour >= 12) {
             meridiem = 1;
         }
 
-        // ----- AM & PM  
+        // ----- AM & PM
         if(match[AM_PM_HOUR_GROUP] != null) {
             if(hour > 12) return null;
             var ampm = match[AM_PM_HOUR_GROUP][0].toLowerCase();
             if(ampm == "a"){
-                meridiem = 0; 
+                meridiem = 0;
                 if(hour == 12) hour = 0;
             }
-            
+
             if(ampm == "p"){
-                meridiem = 1; 
+                meridiem = 1;
                 if(hour != 12) hour += 12;
             }
-        } 
-
+        }
         result.start.assign('hour', hour);
         result.start.assign('minute', minute);
-
         if (meridiem >= 0) {
             result.start.assign('meridiem', meridiem);
-        } else {
-            if (hour < 12) {
-                result.start.imply('meridiem', 0);
-            } else {
-                result.start.imply('meridiem', 1);
-            }
         }
-        
+
         // ==============================================================
         //                  Extracting the 'to' chunk
         // ==============================================================
         match = SECOND_REG_PATTERN.exec(text.substring(result.index + result.text.length));
         if (!match) {
             // Not accept number only result
-            if (result.text.match(/^\d+$/)) { 
+            if (result.text.match(/^\d+$/)) {
                 return null;
             }
             return result;
@@ -157,7 +148,7 @@ exports.Parser = function ENTimeExpressionParser(){
         var meridiem = -1;
 
         // ----- Second
-        if(match[SECOND_GROUP] != null){ 
+        if(match[SECOND_GROUP] != null){
             var second = parseInt(match[SECOND_GROUP]);
             if(second >= 60) return null;
 
@@ -165,13 +156,13 @@ exports.Parser = function ENTimeExpressionParser(){
         }
 
         hour = parseInt(match[2]);
-        
+
         // ----- Minute
         if (match[MINUTE_GROUP]!= null) {
-            
+
             minute = parseInt(match[MINUTE_GROUP]);
             if(minute >= 60) return result;
-            
+
         } else if (hour > 100) {
 
             minute = hour%100;
@@ -185,17 +176,17 @@ exports.Parser = function ENTimeExpressionParser(){
         if(hour > 24) {
             return null;
         }
-        if (hour >= 12) { 
+        if (hour >= 12) {
             meridiem = 1;
         }
-        
-        // ----- AM & PM 
+
+        // ----- AM & PM
         if (match[AM_PM_HOUR_GROUP] != null){
 
             if (hour > 12) return null;
 
             if(match[AM_PM_HOUR_GROUP][0].toLowerCase() == "a"){
-                meridiem = 0; 
+                meridiem = 0;
                 if(hour == 12) {
                     hour = 0;
                     if (!result.end.isCertain('day')) {
@@ -203,17 +194,17 @@ exports.Parser = function ENTimeExpressionParser(){
                     }
                 }
             }
-            
+
             if(match[AM_PM_HOUR_GROUP][0].toLowerCase() == "p"){
-                meridiem = 1; 
+                meridiem = 1;
                 if(hour != 12) hour += 12;
             }
-            
+
             if (!result.start.isCertain('meridiem')) {
                 if (meridiem == 0) {
-                    
+
                     result.start.imply('meridiem', 0);
-                    
+
                     if (result.start.get('hour') == 12) {
                         result.start.assign('hour', 0);
                     }
@@ -221,12 +212,15 @@ exports.Parser = function ENTimeExpressionParser(){
                 } else {
 
                     result.start.imply('meridiem', 1);
-                    
+
                     if (result.start.get('hour') != 12) {
-                        result.start.assign('hour', result.start.get('hour') + 12); 
+                        result.start.assign('hour', result.start.get('hour') + 12);
                     }
                 }
             }
+
+        } else if(hour >= 12) {
+            meridiem = 1;
         }
 
         result.text = result.text + match[0];
@@ -234,22 +228,12 @@ exports.Parser = function ENTimeExpressionParser(){
         result.end.assign('minute', minute);
         if (meridiem >= 0) {
             result.end.assign('meridiem', meridiem);
-        } else {
-            var startAtPM = result.start.isCertain('meridiem') && result.start.get('meridiem') == 1;
-            if (startAtPM && result.start.get('hour') > hour) {
-                // 10pm - 1 (am)
-                result.end.imply('meridiem', 0);
-
-            } else if (hour > 12) {
-                result.end.imply('meridiem', 1);
-            }
         }
 
         if (result.end.date().getTime() < result.start.date().getTime()) {
             result.end.imply('day', result.end.get('day') + 1)
         }
-        
+
         return result;
     }
 }
-

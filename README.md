@@ -14,6 +14,8 @@ Chrono supports most date and time formats, such as :
 * Sat Aug 17 2013 18:40:39 GMT+0900 (JST)
 * 2014-11-30T08:15:30-05:30
 
+## Install
+
 #### Node.js 
 
     npm install chrono-node
@@ -22,9 +24,21 @@ Chrono supports most date and time formats, such as :
 
     bower install chrono
 
-#### Browser
+#### CDN
 
-    <script src="https://rawgithub.com/wanasit/chrono/master/chrono.min.js"></script>
+Via [jsDelivr](https://www.jsdelivr.com/projects/chrono):
+
+```html
+<script src="https://cdn.jsdelivr.net/chrono/VERSION/chrono.min.js"></script>
+```
+
+#### Rails
+
+```ruby
+source 'https://rails-assets.org' do
+  gem 'rails-assets-chrono'
+end
+```
 
 #### Browserify
 
@@ -181,9 +195,9 @@ custom.parseDate("This is at 2.30 AM");
 In the example, a custom refiner is created for assigning PM to parsing results with ambiguous [meridiem](http://en.wikipedia.org/wiki/12-hour_clock). The `refine` method of the refiner class will be called with parsing [results](#parsedresult) (from [parsers](#parser) or other previous refiners). The method must return an array of the new results (which, in this case, we modified those results in place).
 
 
-## Development Guild 
+## Development Guides
 
-This guild explains how to setup chrono project for prospective contributors.
+This guide explains how to setup chrono project for prospective contributors.
 
 ```bash
 # Clone and install library

@@ -1,43 +1,44 @@
 /*
-    Date format with slash "/" (also "-" and ".") between numbers 
-    - Tuesday 11/3/2015
-    - 11/3/2015
-    - 11/3
+    Date format with slash "/" (also "-" and ".") between numbers
+    - Martes 3/11/2015
+    - 3/11/2015
+    - 3/11
 */
 var moment = require('moment');
 var Parser = require('../parser').Parser;
 var ParsedResult = require('../../result').ParsedResult;
 
-var PATTERN = new RegExp('(\\W|^)' + 
-    '(?:' + 
-        '((?:sun|mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?)(?:day)?)' +
+var PATTERN = new RegExp('(\\W|^)' +
+    '(?:' +
+        '((?:domingo|dom|lunes|lun|martes|mar|mi[ée]rcoles|mie|jueves|jue|viernes|vie|s[áa]bado|sab))' +
         '\\s*\\,?\\s*' +
-    ')?' + 
-    '([0-9]{1,2})[\\/\\.\\-]([0-9]{1,2})' + 
-    '(?:' + 
-        '[\\/\\.\\-]' + 
-        '([0-9]{4}|[0-9]{2})' + 
-    ')?' + 
+    ')?' +
+    '([0-9]{1,2})[\\/\\.\\-]([0-9]{1,2})' +
+    '(?:' +
+        '[\\/\\.\\-]' +
+        '([0-9]{4}|[0-9]{2})' +
+    ')?' +
     '(\\W|$)', 'i');
 
-var DAYS_OFFSET = { 'sunday': 0, 'sun': 0, 'monday': 1, 'mon': 1,'tuesday': 2, 'wednesday': 3, 'wed': 3,
-    'thursday': 4, 'thur': 4,'friday': 5, 'fri': 5,'saturday': 6, 'sat': 6,}
+var DAYS_OFFSET = { 'domingo': 0, 'dom': 0, 'lunes': 1, 'lun': 1, 'martes': 2, 'mar': 2, 'miercoles': 3, 'miércoles': 3, 'mie': 3,
+    'jueves': 4, 'jue': 4, 'viernes': 5, 'vier': 5, 'sábado': 6, 'sabado': 6, 'sab': 6,}
 
 
 var OPENNING_GROUP = 1;
 var ENDING_GROUP = 6;
 
+// in Spanish we use day/month/year
 var WEEKDAY_GROUP = 2;
-var MONTH_GROUP = 3;
-var DAY_GROUP = 4;
+var MONTH_GROUP = 4;
+var DAY_GROUP = 3;
 var YEAR_GROUP = 5;
 
-exports.Parser = function ENSlashDateFormatParser(argument) {
+exports.Parser = function ESSlashDateFormatParser(argument) {
     Parser.apply(this, arguments);
 
     this.pattern = function () { return PATTERN; };
     this.extract = function(text, ref, match, opt){
-        
+
         if(match[OPENNING_GROUP] == '/' || match[ENDING_GROUP] == '/') {
             // Long skip, if there is some overlapping like:
             // XX[/YY/ZZ]
@@ -55,10 +56,10 @@ exports.Parser = function ENSlashDateFormatParser(argument) {
             index: index,
             ref: ref,
         });
-            
+
         if(text.match(/^\d\.\d$/)) return;
         if(text.match(/^\d\.\d{1,2}\.\d{1,2}$/)) return;
-        
+
         // MM/dd -> OK
         // MM.dd -> NG
         if(!match[YEAR_GROUP] && match[0].indexOf('/') < 0) return;
@@ -67,7 +68,7 @@ exports.Parser = function ENSlashDateFormatParser(argument) {
         var year = match[YEAR_GROUP] || moment(ref).year() + '';
         var month = match[MONTH_GROUP];
         var day   = match[DAY_GROUP];
-        
+
         month = parseInt(month);
         day  = parseInt(day);
         year = parseInt(year);
@@ -91,10 +92,10 @@ exports.Parser = function ENSlashDateFormatParser(argument) {
         if(day < 1 || day > 31) return null;
 
         if(year < 100){
-            if (year > 50) {
-                year = year + 1900; 
-            } else {
-                year = year + 2000; 
+            if(year > 50){
+                year = year + 2500 - 543; //BE
+            }else{
+                year = year + 2000; //AD
             }
         }
 
@@ -107,7 +108,7 @@ exports.Parser = function ENSlashDateFormatParser(argument) {
             result.start.assign('weekday', DAYS_OFFSET[match[WEEKDAY_GROUP].toLowerCase()]);
         }
 
-        result.tags['ENSlashDateFormatParser'] = true;
+        result.tags['ESSlashDateFormatParser'] = true;
         return result;
     };
 };

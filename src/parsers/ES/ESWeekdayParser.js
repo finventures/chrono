@@ -6,22 +6,22 @@ var moment = require('moment');
 var Parser = require('../parser').Parser;
 var ParsedResult = require('../../result').ParsedResult;
 
-var DAYS_OFFSET = { 'sunday': 0, 'sun': 0, 'monday': 1, 'mon': 1,'tuesday': 2, 'tues':2, 'tue':2, 'wednesday': 3, 'wed': 3,
-    'thursday': 4, 'thurs':4, 'thur': 4, 'thu': 4,'friday': 5, 'fri': 5,'saturday': 6, 'sat': 6,}
+var DAYS_OFFSET = { 'domingo': 0, 'dom': 0, 'lunes': 1, 'lun': 1, 'martes': 2, 'mar':2, 'miercoles': 3, 'miércoles': 3, 'mie': 3,
+    'jueves': 4, 'jue': 4, 'viernes': 5, 'vier': 5, 'sabado': 6, 'sábado': 6, 'sab': 6,}
 
 var PATTERN = new RegExp('(\\W|^)' +
     '(?:(?:\\,|\\(|\\（)\\s*)?' +
-    '(?:(this|last|next)\\s*)?' +
+    '(?:(este|pasado|pr[oó]ximo)\\s*)?' +
     '(' + Object.keys(DAYS_OFFSET).join('|') + ')' +
     '(?:\\s*(?:\\,|\\)|\\）))?' +
-    '(?:\\s*(this|last|next)\\s*week)?' +
+    '(?:\\s*(este|pasado|pr[óo]ximo)\\s*week)?' +
     '(?=\\W|$)', 'i');
 
 var PREFIX_GROUP = 2;
 var WEEKDAY_GROUP = 3;
 var POSTFIX_GROUP = 4;
 
-exports.Parser = function ENWeekdayParser() {
+exports.Parser = function ESWeekdayParser() {
     Parser.apply(this, arguments);
 
     this.pattern = function() { return PATTERN; }
@@ -47,11 +47,11 @@ exports.Parser = function ENWeekdayParser() {
             var norm = prefix || postfix;
             norm = norm.toLowerCase();
 
-            if(norm == 'last')
+            if(norm == 'pasado')
                 startMoment.day(offset - 7)
-            else if(norm == 'next')
+            else if(norm == 'próximo' || norm == 'proximo')
                 startMoment.day(offset + 7)
-            else if(norm== 'this')
+            else if(norm== 'este')
                 startMoment.day(offset);
         } else{
             var refOffset = startMoment.day();
@@ -73,4 +73,3 @@ exports.Parser = function ENWeekdayParser() {
         return result;
     }
 }
-

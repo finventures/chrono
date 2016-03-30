@@ -1,22 +1,21 @@
 /*
-    
-    
+
+
 */
 
 var moment = require('moment');
 var Parser = require('../parser').Parser;
 var ParsedResult = require('../../result').ParsedResult;
+var PATTERN = /(\W|^)(now|today|tonight|tomorrow|tmr|tom|yesterday|last\s*night|this\s*(morning|afternoon|evening))(?=\W|$)/i;
 
-var PATTERN = /(\W|^)(today|tonight|tomorrow|tmr|tom|yesterday|last\s*night|this\s*(morning|afternoon|evening))(?=\W|$)/i;
-    
 exports.Parser = function ENCasualDateParser(){
-    
+
     Parser.apply(this, arguments);
-        
+
     this.pattern = function() { return PATTERN; }
-    
-    this.extract = function(text, ref, match, opt){ 
-        
+
+    this.extract = function(text, ref, match, opt){
+
         var text = match[0].substr(match[1].length);
         var index = match.index + match[1].length;
         var result = new ParsedResult({
@@ -32,14 +31,14 @@ exports.Parser = function ENCasualDateParser(){
         var tomorrowWords = ['tomorrow', 'tmr', 'tom'];
 
         if(lowerText == 'tonight'){
-            // Normally means this coming midnight 
+            // Normally means this coming midnight
             result.start.imply('hour', 22);
             result.start.imply('meridiem', 1);
 
         } else if(tomorrowWords.indexOf(lowerText) > -1){
 
             // Check not "Tomorrow" on late night
-            if(refMoment.hour() > 4) {
+            if(refMoment.hour() > 1) {
                 startMoment.add(1, 'day');
             }
 
@@ -69,6 +68,14 @@ exports.Parser = function ENCasualDateParser(){
 
                 result.start.imply('hour', 6);
             }
+
+        } else if (lowerText.match("now")) {
+
+          result.start.imply('hour', refMoment.hour());
+          result.start.imply('minute', refMoment.minute());
+          result.start.imply('second', refMoment.second());
+          result.start.imply('millisecond', refMoment.millisecond());
+
         }
 
         result.start.assign('day', startMoment.date())
@@ -78,4 +85,3 @@ exports.Parser = function ENCasualDateParser(){
         return result;
     }
 }
-

@@ -1,5 +1,42 @@
 
 test("Test - Single Expression", function() {
+    var text = "The event is going ahead next month (04/2016)";
+    var results = chrono.parse(text, new Date(2012,7,10));
+    ok(results.length == 1, JSON.stringify( results ) )
+
+    var result = results[0];
+    if(result){
+        ok(result.start, JSON.stringify(result.start) )
+        ok(result.start.get('year') == 2016, 'Test Result - (Year) ' + JSON.stringify(result.start) )
+        ok(result.start.get('month') == 4, 'Test Result - (Month) ' + JSON.stringify(result.start) )
+        ok(result.start.get('day') == 1, 'Test Result - (Day) ' + JSON.stringify(result.start) )
+
+        ok(result.index == 37, 'Wrong index')
+        ok(result.text == '04/2016', result.text )
+
+        var resultDate = result.start.date();
+        var expectDate = new Date(2016, 4-1, 1, 12);
+        ok(Math.abs(expectDate.getTime() - resultDate.getTime()) < 100000, 'Test result.startDate ' + resultDate +'/' +expectDate)
+    }
+
+    var text = "Published: 06/2004";
+    var results = chrono.parse(text, new Date(2012,7,10));
+    ok(results.length == 1, JSON.stringify( results ) )
+
+    var result = results[0];
+    if(result){
+        ok(result.start, JSON.stringify(result.start) )
+        ok(result.start.get('year') == 2004, 'Test Result - (Year) ' + JSON.stringify(result.start) )
+        ok(result.start.get('month') == 6, 'Test Result - (Month) ' + JSON.stringify(result.start) )
+        ok(result.start.get('day') == 1, 'Test Result - (Day) ' + JSON.stringify(result.start) )
+
+        ok(result.index == 11, 'Wrong index')
+        ok(result.text == '06/2004', result.text )
+
+        var resultDate = result.start.date();
+        var expectDate = new Date(2004, 6-1, 1, 12);
+        ok(Math.abs(expectDate.getTime() - resultDate.getTime()) < 100000, 'Test result.startDate ' + resultDate +'/' +expectDate)
+    }
 
     var text = "8/10/2012";
     var results = chrono.parse(text, new Date(2012,7,10));
@@ -244,6 +281,23 @@ test('Test - Random date patterns', function() {
     resultDate = results[0].start.date();
     ok(results.length == 1, JSON.stringify(results) )
     ok(Math.abs(expectDate.getTime() - resultDate.getTime()) < 1000, resultDate +'/' +expectDate);
+
+
+    expectDate = new Date(1999, 7, 13, 12, 0);
+    text = "8/13/99";
+    results = chrono.parse(text);
+    resultDate = results[0].start.date();
+    ok(results.length == 1, JSON.stringify(results) )
+    ok(Math.abs(expectDate.getTime() - resultDate.getTime()) < 1000, resultDate +'/' +expectDate);
+
+    expectDate = new Date(1989, 7, 13, 12, 0);
+    text = "8/13/89";
+    results = chrono.parse(text);
+    resultDate = results[0].start.date();
+    ok(results.length == 1, JSON.stringify(results) )
+    ok(Math.abs(expectDate.getTime() - resultDate.getTime()) < 1000, resultDate +'/' +expectDate);
+
+
 });
 
 
