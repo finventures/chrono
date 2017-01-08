@@ -13,7 +13,7 @@ exports.ParsedComponents = require('./result').ParsedComponents;
 
 var Chrono = function(option) {
 
-    option = option || exports.options.strictOption();
+    option = option || exports.options.casualOption();
 
     this.option = option;
     this.parsers = new Object(option.parsers);
@@ -36,7 +36,7 @@ Chrono.prototype.parse = function(text, refDate, opt) {
     allResults.sort(function(a, b) {
         return a.index - b.index;
     });
-    
+
     this.refiners.forEach(function (refiner) {
         allResults = refiner.refine(text, allResults, opt);
     });

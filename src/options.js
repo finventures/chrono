@@ -27,20 +27,39 @@ function baseOption(strictMode) {
             new parser.ESTimeExpressionParser(strictMode),
             new parser.ESMonthNameLittleEndianParser(strictMode),
             new parser.ESSlashDateFormatParser(strictMode),
+
+            // FR
+            new parser.FRDeadlineFormatParser(strictMode),
+            new parser.FRMonthNameLittleEndianParser(strictMode),
+            new parser.FRSlashDateFormatParser(strictMode),
+            new parser.FRTimeAgoFormatParser(strictMode),
+            new parser.FRTimeExpressionParser(strictMode),
+
+            // ZH-Hant
+            new parser.ZHHantDateParser(strictMode),
+            new parser.ZHHantWeekdayParser(strictMode),
+            new parser.ZHHantTimeExpressionParser(strictMode),
+            new parser.ZHHantCasualDateParser(strictMode),
+            new parser.ZHHantDeadlineFormatParser(strictMode),
         ],
 
         refiners: [
             // Removing overlaping first
             new refiner.OverlapRemovalRefiner(),
+            new refiner.ForwardDateRefiner(),
 
             // ETC
             new refiner.ENMergeDateTimeRefiner(),
             new refiner.ENMergeDateRangeRefiner(),
+            new refiner.ENPrioritizeSpecificDateRefiner(),
+            new refiner.FRMergeDateRangeRefiner(),
+            new refiner.FRMergeDateTimeRefiner(),
             new refiner.JPMergeDateRangeRefiner(),
 
             // Extract additional info later
             new refiner.ExtractTimezoneOffsetRefiner(),
             new refiner.ExtractTimezoneAbbrRefiner(),
+
             new refiner.UnlikelyFormatFilter()
         ]
     }
@@ -59,7 +78,9 @@ exports.casualOption = function () {
 
     // EN
     options.parsers.unshift(new parser.ENCasualDateParser());
+    options.parsers.unshift(new parser.ENCasualTimeParser());
     options.parsers.unshift(new parser.ENWeekdayParser());
+    options.parsers.unshift(new parser.ENRelativeDateFormatParser());
 
     // JP
     options.parsers.unshift(new parser.JPCasualDateParser());
@@ -68,6 +89,9 @@ exports.casualOption = function () {
     options.parsers.unshift(new parser.ESCasualDateParser());
     options.parsers.unshift(new parser.ESWeekdayParser());
 
+    // FR
+    options.parsers.unshift(new parser.FRCasualDateParser());
+    options.parsers.unshift(new parser.FRWeekdayParser());
 
     return options;
 };

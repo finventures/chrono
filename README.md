@@ -16,29 +16,46 @@ Chrono supports most date and time formats, such as :
 
 ## Install
 
-#### Node.js 
+#### npm (recommended)
 
-    npm install chrono-node
+Just run:
+
+    $ npm i --save chrono-node
+    
+And start using chrono:
+
+    var chrono = require('chrono-node')
+    chrono.parseDate('An appointment on Sep 12-13') 
 
 #### Bower
 
-    bower install chrono
+Prefer bower? You can do that, too:
 
-#### CDN
+Just run:
 
-Via [jsDelivr](https://www.jsdelivr.com/projects/chrono):
-
+    $ bower install chrono
+  
+And use:
+   
 ```html
-<script src="https://cdn.jsdelivr.net/chrono/VERSION/chrono.min.js"></script>
+    <script src="bower_components/chrono/chrono.min.js"></script>
+    <script>chrono.parseDate('An appointment on Sep 12-13')</script>
 ```
+    
 
-#### Rails
+#### Other Options:
 
-```ruby
-source 'https://rails-assets.org' do
-  gem 'rails-assets-chrono'
-end
-```
+Doing something else? No worries. Try these:
+
+Platform | Installation
+---------|----
+CDN      | Via [jsDelivr]:<br> `<script src="https://cdn.jsdelivr.net/chrono/VERSION/chrono.min.js"></script>`
+Rails    | Install from [Rails Assets] by adding this to your Gemfile:<br> `gem 'rails-assets-chrono', source: 'https://rails-assets.org'`
+Swift    | Try using the community-made [chrono-swift] wrapper.
+
+[Rails Assets]: https://rails-assets.org/
+[jsDelivr]: https://www.jsdelivr.com/projects/chrono
+[chrono-swift]: https://github.com/neilsardesai/chrono-swift
 
 #### Browserify
 
@@ -48,7 +65,7 @@ Chrono's modules are linked and packaged using [Browserify](http://browserify.or
 browserify src/chrono.js --s chrono -o chrono.js
 ```
 
-## USAGE
+## Usage
 
 Simply pass a string to function `chrono.parseDate` or `chrono.parse`. 
 
@@ -118,6 +135,34 @@ A group of found date and time components (year, month, hour, etc). ParsedCompon
 * `isCertain(component)`      return true if the value of the component is known.
 * `date()`                    Create a javascript Date
 
+```javascript
+// Remove the timezone offset of a parsed date and then create the Date object
+> var results = new chrono.parse('2016-03-08T01:16:07+02:00'); // Create new ParsedResult Object
+> results[0].start.assign('timezoneOffset', 0); // Change value in ParsedComponents Object 'start'
+> var d = results[0].start.date(); // Create a Date object
+> d.toString(); // Display resulting Date object
+'Tue Mar 08 2016 01:16:07 GMT+0000 (GMT)'
+```
+
+### Strict vs Casual 
+
+Chrono comes with `strict` mode that parse only formal date patterns. 
+
+```javascript
+// 'strict' mode
+chrono.strict.parseDate('Today');       // null
+chrono.strict.parseDate('Friday');      // null
+chrono.strict.parseDate('2016-07-01');  // Fri Jul 01 2016 12:00:00 ...
+chrono.strict.parseDate('Jul 01 2016'); // Fri Jul 01 2016 12:00:00 ...
+
+// 'casual' mode (default) 
+chrono.parseDate('Today');              // Thu Jun 30 2016 12:00:00 ...
+chrono.casual.parseDate('Friday');      // Fri Jul 01 2016 12:00:00 ...
+chrono.casual.parseDate('Jul 01 2016'); // Fri Jul 01 2016 12:00:00 ...
+chrono.casual.parseDate('Friday');      // Fri Jul 01 2016 12:00:00 ...
+```
+
+
 ## Customize Chrono
 
 Chrono’s extraction pipeline are mainly separated into 'parse' and ‘refine’ phases. During parsing, ‘parsers’ (`Parser`) are used to extract patterns from the input text. The parsed results ([ParsedResult](#parsedresult)) are the combined, sorted, then refine using ‘refiners’ (`Refiner`). In the refining phase, the results can be combined, filtered-out, or attached with additional information.
@@ -147,6 +192,9 @@ christmasParser.extract = function(text, ref, match, opt) {
     });
 }
 
+// Create a new custom Chrono. The initial pipeline 'option' can also be specified as 
+// - new chrono.Chrono(exports.options.strictOption())
+// - new chrono.Chrono(exports.options.casualOption())
 var custom = new chrono.Chrono();
 custom.parsers.push(christmasParser);
 
@@ -180,6 +228,9 @@ guessPMRefiner.refine = function(text, results, opt) {
     return results;
 } 
 
+// Create a new custom Chrono. The initial pipeline 'option' can also be specified as 
+// - new chrono.Chrono(exports.options.strictOption())
+// - new chrono.Chrono(exports.options.casualOption())
 var custom = new chrono.Chrono();
 custom.refiners.push(guessPMRefiner);
 

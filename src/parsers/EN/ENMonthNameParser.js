@@ -12,18 +12,15 @@ var moment = require('moment');
 
 var Parser = require('../parser').Parser;
 var ParsedResult = require('../../result').ParsedResult;
-
 var util  = require('../../utils/EN');
 
-    
 var PATTERN = new RegExp('(^|\\D\\s+|[^\\w\\s])' +
     '(Jan\\.?|January|Feb\\.?|February|Mar\\.?|March|Apr\\.?|April|May\\.?|Jun\\.?|June|Jul\\.?|July|Aug\\.?|August|Sep\\.?|Sept\\.?|September|Oct\\.?|October|Nov\\.?|November|Dec\\.?|December)' + 
     '\\s*' +
     '(?:' +
-        ',?\\s*([0-9]{4})(\\s*BE)?' +
+        '[,-]?\\s*([0-9]{4})(\\s*BE|AD|BC)?' +
     ')?' +
-    '(?=[^\\s\\w]|$)', 'i');
-
+    '(?=[^\\s\\w]|\\s+[^0-9]|\\s+$|$)', 'i');
 
 var MONTH_NAME_GROUP = 2;
 var YEAR_GROUP = 3;
@@ -52,9 +49,14 @@ exports.Parser = function ENMonthNameParser(){
             year = match[YEAR_GROUP];
             year = parseInt(year);
 
-            if(match[YEAR_BE_GROUP]){ 
-                //BC
-                year = year - 543;
+            if(match[YEAR_BE_GROUP]){
+                if (match[YEAR_BE_GROUP].match(/BE/)) {
+                    // Buddhist Era
+                    year = year - 543;
+                } else if (match[YEAR_BE_GROUP].match(/BC/)) {
+                    // Before Christ
+                    year = -year;
+                }
 
             } else if (year < 100){ 
 
@@ -91,4 +93,3 @@ exports.Parser = function ENMonthNameParser(){
         return result;
     }
 }
-
